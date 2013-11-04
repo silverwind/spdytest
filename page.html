@@ -1,0 +1,35 @@
+<html>
+<head>
+    <title>spdytest</title>
+</head>
+<body>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <script type="text/javascript">
+        $(function() {
+            $("#go").on("click", function(arguments) {
+                var files = $("#file").get(0).files;
+                var start, total;
+                var formData = new FormData();
+                for (var i = 0, len = files.length; i < len; i++)
+                    formData.append(files[i].name, files[i]);
+
+                var xhr = new XMLHttpRequest();
+                xhr.upload.addEventListener("progress", function(event) {
+                    if (total === undefined) total = event.total;
+                }, false);
+
+                xhr.upload.addEventListener("load", function(event) {
+                    var speed = Math.round(total / ((new Date().getTime() - start)/1000));
+                    $("body").append("<p>xhr2 done - " + speed + " bytes/sec</p>")
+                }, false);
+
+                xhr.open("post", "/upload", true);
+                start = new Date().getTime();
+                xhr.send(formData);
+            })
+        });
+    </script>
+    <input type="file" name="file" id="file" multiple="multiple"></input>
+    <button name="go" id="go">go</button>
+</body>
+</html>
