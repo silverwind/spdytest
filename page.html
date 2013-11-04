@@ -15,7 +15,7 @@
 
                 var xhr = new XMLHttpRequest();
                 xhr.upload.addEventListener("progress", function(event) {
-                    if (total === undefined) total = event.total;
+                    if (total === undefined) total = event.loaded;
                 }, false);
 
                 xhr.upload.addEventListener("load", function(event) {
