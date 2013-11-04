@@ -8,7 +8,7 @@ var srv          = require('spdy'),
 var options = {
     key              : fs.readFileSync("key.pem"),
     cert             : fs.readFileSync("cert.pem"),
-    windowSize       : 1024,
+    windowSize       : 1024 * 1024,
     honorCipherOrder : true,
     ciphers          : "AES128-GCM-SHA256:!RC4:!MD5:!aNULL:!NULL:!EDH:HIGH",
     secureProtocol   : "SSLv23_server_method"
