@@ -20,21 +20,22 @@ var server = srv.createServer(options, function (req, res) {
         res.end(fs.readFileSync("page.html"));
     } else if (req.url === '/upload') {
         var form = new multiparty.Form();
-
+        console.log("upload started");
         form.parse(req, function (err, fields, files) {
             if (err) {
-                res.writeHead(400, {'content-type': 'text/plain'});
-                res.end("invalid request: " + err.message);
+                res.writeHead(400);
+                res.end();
+                console.log("invalid request: " + err.message);
                 return;
             }
-            res.writeHead(200, {'content-type': 'text/plain'});
-            res.write('received fields:\n\n ' + util.inspect(fields));
-            res.write('\n\n');
-            res.end('received files:\n\n ' + util.inspect(files));
+            res.writeHead(200);
+            res.end();
+            console.log('received fields:\n\n ' + util.inspect(fields));
+            console.log('received files:\n\n ' + util.inspect(files));
         });
     } else {
         res.writeHead(404, {'content-type': 'text/plain'});
-        res.end('404');
+        res.end();
     }
 });
 server.listen(443, function () {
