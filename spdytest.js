@@ -14,7 +14,7 @@ var options = {
     secureProtocol   : "SSLv23_server_method"
 };
 
-var server = srv.createServer(options, function (req, res) {
+srv.createServer(options, function (req, res) {
     if (req.url === '/') {
         res.writeHead(200, {'content-type': 'text/html'});
         res.end(fs.readFileSync("page.html"));
@@ -37,7 +37,6 @@ var server = srv.createServer(options, function (req, res) {
         res.writeHead(404, {'content-type': 'text/plain'});
         res.end();
     }
-});
-server.listen(443, function () {
-    console.info('listening on http://localhost:' + 443 + '/');
+}).listen(443, function () {
+    console.info('listening on https://localhost/');
 });

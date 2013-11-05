@@ -3,13 +3,13 @@
     <title>spdytest</title>
 </head>
 <body>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
+    <input type="file" name="file" id="file" multiple="multiple"><button name="go" id="go">go</button>
     <script type="text/javascript">
-        $(function() {
-            $("#go").on("click", function(arguments) {
-                var files = $("#file").get(0).files;
-                var start, total;
-                var formData = new FormData();
+        window.addEventListener("load", function load() {
+            document.getElementById("go").addEventListener("click", function() {
+                var files = document.getElementById("file").files,
+                    start, total, formData = new FormData();
+
                 for (var i = 0, len = files.length; i < len; i++)
                     formData.append(files[i].name, files[i]);
 
@@ -19,17 +19,18 @@
                 }, false);
 
                 xhr.upload.addEventListener("load", function(event) {
-                    var speed = Math.round(total / ((new Date().getTime() - start)/1000));
-                    $("body").append("<p>xhr2 done - " + speed + " bytes/sec</p>")
+                    var speed = Math.round(total / ((new Date().getTime() - start)/1000)),
+                        line = document.createElement("p");
+
+                    line.innerHTML = "<p>xhr2 done - " + speed + " bytes/sec</p>";
+                    document.getElementsByTagName("body")[0].appendChild(line);
                 }, false);
 
-                xhr.open("post", "/upload", true);
                 start = new Date().getTime();
+                xhr.open("post", "/upload", true);
                 xhr.send(formData);
-            })
-        });
+            }, false);
+        }, false);
     </script>
-    <input type="file" name="file" id="file" multiple="multiple"></input>
-    <button name="go" id="go">go</button>
 </body>
 </html>
