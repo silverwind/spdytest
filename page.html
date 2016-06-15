@@ -1,44 +1,45 @@
 <html>
 <head>
-    <title>spdytest</title>
+  <title>spdytest</title>
 </head>
 <body>
-    <input type="file" name="file" id="file" multiple="multiple">
-    <p id="status"></p>
-    <script type="text/javascript">
+  <input type="file" name="file" id="file" multiple="multiple">
+  <p id="status"></p>
+  <script type="text/javascript">
     document.getElementById("file").addEventListener("change", function() {
-        var files = document.getElementById("file").files,
-            status = document.getElementById("status"),
-            start, total, formData = new FormData();
+      var start, total;
+      var files = document.getElementById("file").files;
+      var status = document.getElementById("status");
+      var fd = new FormData();
+      var xhr = new XMLHttpRequest();
 
-        for (var i = 0, len = files.length; i < len; i++)
-            formData.append(files[i].name, files[i]);
+      for (var i = 0, len = files.length; i < len; i++)
+        fd.append(files[i].name, files[i]);
 
-        var xhr = new XMLHttpRequest();
+      xhr.upload.addEventListener("progress", function(e) {
+        if (!e.lengthComputable) return;
+        if (!total) total = e.total;
+        var speed = Math.round(e.loaded / ((new Date().getTime() - start) / 1000));
+        status.innerHTML = "Uploading @ " + formatBytes(speed) + "/s";
+      }, false);
 
-        xhr.upload.addEventListener("progress", function(event) {
-            if (total === undefined) total = event.total;
-            var speed = Math.round(total / ((new Date().getTime() - start)/1000));
-            status.innerHTML = "<p>Uploading - " + formatBytes(speed) + "/sec</p>";
-        }, false);
+      xhr.upload.addEventListener("load", function() {
+        var speed = Math.round(total / ((new Date().getTime() - start) / 1000));
+        status.innerHTML = "Upload done @ " + formatBytes(speed) + "/s";
+      }, false);
 
-        xhr.upload.addEventListener("load", function(event) {
-            var speed = Math.round(total / ((new Date().getTime() - start)/1000));
-            status.innerHTML = "<p>Upload done - " + formatBytes(speed) + "/sec</p>";
-        }, false);
-
-        start = new Date().getTime();
-        xhr.open("post", "/upload", true);
-        status.innerHTML = "Uploading ...";
-        xhr.send(formData);
+      start = new Date().getTime();
+      xhr.open("post", "/upload", true);
+      status.innerHTML = "Uploading ...";
+      xhr.send(fd);
     });
 
     function formatBytes(num) {
-        if (num < 1000) return num + " B";
-        var units = ["B", "kB", "MB", "GB", "TB", "PB"];
-        var exp = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1);
-        return (num / Math.pow(1000, exp)).toPrecision(3) + " " + units[exp];
+      if (num < 1000) return num + " B";
+      var units = ["B", "kB", "MB", "GB", "TB", "PB"];
+      var exp = Math.min(Math.floor(Math.log(num) / Math.log(1000)), units.length - 1);
+      return (num / Math.pow(1000, exp)).toPrecision(3) + " " + units[exp];
     }
-    </script>
+  </script>
 </body>
 </html>

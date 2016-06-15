@@ -2,6 +2,7 @@
   "name": "spdytest",
   "version": "0.0.1",
   "dependencies": {
+    "busboy": "^0.2.13",
     "multiparty": "~4.1.2",
     "spdy": "~3.3.3"
   },

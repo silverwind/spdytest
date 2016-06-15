@@ -1,10 +1,10 @@
 "use strict";
 
-var spdy         = require("spdy"),
-    https        = require("https"),
-    fs           = require("fs"),
-    util         = require("util"),
-    multiparty   = require("multiparty");
+var spdy   = require("spdy");
+var https  = require("https");
+var fs     = require("fs");
+var util   = require("util");
+var Busboy = require("busboy");
 
 var opts = {
     key: fs.readFileSync("key.pem"),
@@ -26,26 +26,26 @@ var handler = function (req, res) {
         res.writeHead(200, {"content-type": "text/html"});
         res.end(fs.readFileSync("page.html"));
     } else if (req.url === "/upload") {
-        var form = new multiparty.Form();
-        console.log("upload started");
-        form.parse(req, function (err, fields, files) {
-            if (err) {
-                res.writeHead(400);
-                res.end();
-                console.log("invalid request: " + err.message);
-                return;
-            }
-            res.writeHead(200);
-            res.end();
-            console.log("received fields:\n\n " + util.inspect(fields));
-            console.log("received files:\n\n " + util.inspect(files));
+        console.log("Upload started");
+        var busboy = new Busboy({headers: req.headers})
+        busboy.on("finish", function() {
+          console.log("Upload finished");
+          res.writeHead(200);
+          res.end();
         });
+        req.pipe(busboy);
     } else {
-        res.writeHead(404, {"content-type": "text/plain"});
+        res.writeHead(404);
         res.end();
     }
 };
 
-https.createServer(opts, handler).listen(2000);
-spdy.createServer(optsSpdy, handler).listen(2001);
-spdy.createServer(optsH2, handler).listen(2002);
+https.createServer(opts, handler).listen(2000, function() {
+    console.log("HTTPS 1.1 listening on https://localhost:2000");
+});
+spdy.createServer(optsSpdy, handler).listen(2001, function() {
+    console.log("SPDY 3.1 listening on https://localhost:2001");
+});
+spdy.createServer(optsH2, handler).listen(2002, function() {
+    console.log("HTTP 2 listening on https://localhost:2002");
+});
