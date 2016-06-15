@@ -1,24 +1,31 @@
 "use strict";
 
-var srv          = require('spdy'),
+var spdy         = require("spdy"),
+    https        = require("https"),
     fs           = require("fs"),
-    util         = require('util'),
-    multiparty   = require('multiparty');
+    util         = require("util"),
+    multiparty   = require("multiparty");
 
-var options = {
-    key              : fs.readFileSync("key.pem"),
-    cert             : fs.readFileSync("cert.pem"),
-    windowSize       : 1024 * 1024,
-    honorCipherOrder : true,
-    ciphers          : "AES128-GCM-SHA256:!RC4:!MD5:!aNULL:!NULL:!EDH:HIGH",
-    secureProtocol   : "SSLv23_server_method"
+var opts = {
+    key: fs.readFileSync("key.pem"),
+    cert: fs.readFileSync("cert.pem"),
+    honorCipherOrder: true,
 };
 
-srv.createServer(options, function (req, res) {
-    if (req.url === '/') {
-        res.writeHead(200, {'content-type': 'text/html'});
+var optsSpdy = Object.assign(opts, {
+    windowSize: 1024 * 1024,
+    protocols: "spdy/3.1",
+});
+
+var optsH2 = Object.assign(optsSpdy, {
+    protocols: "h2",
+});
+
+var handler = function (req, res) {
+    if (req.url === "/") {
+        res.writeHead(200, {"content-type": "text/html"});
         res.end(fs.readFileSync("page.html"));
-    } else if (req.url === '/upload') {
+    } else if (req.url === "/upload") {
         var form = new multiparty.Form();
         console.log("upload started");
         form.parse(req, function (err, fields, files) {
@@ -30,13 +37,15 @@ srv.createServer(options, function (req, res) {
             }
             res.writeHead(200);
             res.end();
-            console.log('received fields:\n\n ' + util.inspect(fields));
-            console.log('received files:\n\n ' + util.inspect(files));
+            console.log("received fields:\n\n " + util.inspect(fields));
+            console.log("received files:\n\n " + util.inspect(files));
         });
     } else {
-        res.writeHead(404, {'content-type': 'text/plain'});
+        res.writeHead(404, {"content-type": "text/plain"});
         res.end();
     }
-}).listen(443, function () {
-    console.info('listening on https://localhost/');
-});
+};
+
+https.createServer(opts, handler).listen(2000);
+spdy.createServer(optsSpdy, handler).listen(2001);
+spdy.createServer(optsH2, handler).listen(2002);
